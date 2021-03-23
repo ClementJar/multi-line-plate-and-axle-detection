@@ -1,20 +1,27 @@
 import os
 import http.client
 import json
+import subprocess
 from threading import Thread
 from datetime import datetime
+
 from flask import Flask, request
 from flask_json import FlaskJSON, JsonError, json_response, as_json
+# comment out below line to enable tensorflow outputs
+import tensorflow as tf
+
+physical_devices = tf.config.experimental.list_physical_devices('GPU')
+if len(physical_devices) > 0:
+    tf.config.experimental.set_memory_growth(physical_devices[0], True)
 
 app = Flask(__name__)
 
 
-@app.route("/run-license-detection", methods=['POST'])
-def run_license_detection():
+def prepare_command(data):
     detect_with_video = "python detect_video.py "
     detect_with_image = "python detect.py "
-    normal_weight_and_size = " --weights ./checkpoints/yolov4-416 --size 416 "
-    tiny_weight_and_size = " --weights ./checkpoints/yolov4-tiny-416 --size 416 "
+    normal_weight_and_size = " --weights ./checkpoints/yolov4-License-Plate-416 --size 416 "
+    tiny_weight_and_size = " --weights ./checkpoints/yolov4-License-Plate-416 --size 416 "
     model = " --model yolov4 "
     video_par = " --video "
     image_par = " --images "
@@ -26,13 +33,15 @@ def run_license_detection():
     output_path = " ./detections/"
     output_file = datetime.now()
     # using force inorder to skip mimetype checking to have shorter curl command
-    data = request.get_json(force=True)
+
     # disable json add status
     app.config['JSON_ADD_STATUS'] = False
 
     try:
+
         # starting with a single path, will make it more scalable later
         path = data['path']  # path to the media to be used for detection
+        model_path = data['model_path']  # path to the media to be used for detection
         det_type = data['type']  # type detection to be performed, image or vide
         d_count = bool(data['count'])  # whether to count objects or not
         d_crop = bool(data['crop'])  # whether to crop media or not
@@ -65,40 +74,27 @@ def run_license_detection():
         if d_plate:
             command = command + plate_par
 
-        th = Thread(target=run_detection(command))
-        th.start()
+        return command, path
 
     except (KeyError, TypeError, ValueError):
-        raise JsonError(description='Invalid value.')
 
-    return json_response(status=200, message="Detection running on" + path)
-
-
-if __name__ == '__main__':
-    app.run(debug=True)
-
-
-def return_detected_details(plate_num, path, axle_count):
-    # create JSON
-    data = {
-        path: path,
-        plate_num: plate_num,
-        axle_count: axle_count
-    }
-
-    conn = http.client.HTTPSConnection('www.httpbin.org')
-
-    headers = {'Content-type': 'application/json'}
-
-    foo = {'text': 'Hello HTTP #1 **cool**, and #1!'}
-    json_data = json.dumps(foo)
-
-    conn.request('POST', '/post', json_data, headers)
-
-    response = conn.getresponse()
-    print(response.read().decode())
+        return
 
 
 def run_detection(command):
-    var = os.popen(command).read()
-    print(var)
+    subprocess.Popen(command)
+
+    print("running in back ground")
+
+
+@app.route("/run-license-detection", methods=['POST'])
+def main():
+    data = request.get_json(force=True)
+    command, path = prepare_command(data)
+    run_detection(command)
+    json_response(status=200, message="Detection running on" + path)
+
+## picture detection method
+
+if __name__ == '__main__':
+    app.run(debug=True, threaded=True)

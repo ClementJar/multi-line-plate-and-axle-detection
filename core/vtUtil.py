@@ -1,7 +1,7 @@
 import colorsys
 import random
 import re
-from imutils import contours
+# from imutils import contours
 import cv2
 import numpy as np
 import pytesseract
