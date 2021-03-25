@@ -117,15 +117,15 @@ def main(_argv):
         # custom allowed classes (uncomment line below to allow detections for only people)
         # allowed_classes = ['person']
         # initialise path
-        crop_path = ""
+        final_path = ""
         # if crop flag is enabled, crop each detection and save it as new image
         if FLAGS.crop:
-            crop_path = os.path.join(os.getcwd(), 'detections', 'crop', image_name)
+            crop_path = os.path.join("C:\\app_upload\\uploads\\tempVehicleDetails", image_name)
             try:
                 os.mkdir(crop_path)
             except FileExistsError:
                 pass
-            crop_objects(cv2.cvtColor(original_image, cv2.COLOR_BGR2RGB), pred_bbox, crop_path, allowed_classes)
+            final_path = crop_objects(cv2.cvtColor(original_image, cv2.COLOR_BGR2RGB), pred_bbox, crop_path, allowed_classes)
 
         # if ocr flag is enabled, perform general text extraction using Tesseract OCR on object detection bounding box
         if FLAGS.ocr:
@@ -145,7 +145,7 @@ def main(_argv):
                                                   allowed_classes=allowed_classes, read_plate=FLAGS.plate)
 
         ## try to capture path and plate number
-        return_detected_plate_details(crop_path, plate_number)
+        return_detected_plate_details(os.path.join(image_name, final_path), plate_number)
 
         image = Image.fromarray(image.astype(np.uint8))
         if not FLAGS.dont_show:

@@ -41,7 +41,6 @@ def prepare_command(data):
 
         # starting with a single path, will make it more scalable later
         path = data['path']  # path to the media to be used for detection
-        model_path = data['model_path']  # path to the media to be used for detection
         det_type = data['type']  # type detection to be performed, image or vide
         d_count = bool(data['count'])  # whether to count objects or not
         d_crop = bool(data['crop'])  # whether to crop media or not
@@ -93,6 +92,7 @@ def main():
     command, path = prepare_command(data)
     run_detection(command)
     json_response(status=200, message="Detection running on" + path)
+    return "Detection running on" + path, 200
 
 ## picture detection method
 

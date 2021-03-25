@@ -2,7 +2,7 @@ import os
 
 import cv2
 import pytesseract
-
+from datetime import datetime
 from core.config import cfg
 from core.utils import read_class_names
 
@@ -51,10 +51,11 @@ def crop_objects(img, data, path, allowed_classes):
             # crop detection from image (take an additional 5 pixels around all edges)
             cropped_img = img[int(ymin)-5:int(ymax)+5, int(xmin)-5:int(xmax)+5]
             # construct image name and join it to path for saving crop properly
-            img_name = class_name + '_' + str(counts[class_name]) + '.png'
+            img_name = class_name + '_' + str(datetime.today().strftime('%Y_%m_%d_%H_%M')) + '.png'
             img_path = os.path.join(path, img_name )
             # save image
             cv2.imwrite(img_path, cropped_img)
+            return img_name
         else:
             continue
         
