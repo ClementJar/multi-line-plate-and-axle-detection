@@ -24,6 +24,8 @@ def prepare_command(data):
     tiny_weight_and_size = " --weights ./checkpoints/yolov4-License-Plate-416 --size 416 "
     model = " --model yolov4 "
     video_par = " --video "
+    ip_address_par = " --ip_address "
+    vehicle_side_par = " --vehicle_side "  # back or front of vehicle
     image_par = " --images "
     output_par = " --output "
     count_par = " --count "
@@ -41,7 +43,12 @@ def prepare_command(data):
 
         # starting with a single path, will make it more scalable later
         path = data['path']  # path to the media to be used for detection
+        vehicle_side = data['vehicle_side']  # path to the media to be used for detection
         det_type = data['type']  # type detection to be performed, image or vide
+        password = data['password']  # password of camera
+        user_name = data['userName']  # username of camera
+        int_port = data['intPort']  # internal port of camera
+        ip_address = data['ipAddress']  # ip address of device capturing
         d_count = bool(data['count'])  # whether to count objects or not
         d_crop = bool(data['crop'])  # whether to crop media or not
         d_plate = bool(data['plate'])  # plate recognition or not
@@ -49,7 +56,8 @@ def prepare_command(data):
 
         file_name, file_ext = os.path.splitext(path)
         output_file = path + "-" + output_file.strftime("%H:%M:%S") + file_ext
-
+        # camera_url = "rtsp://"+"admin"+ ":" +"Admin1234"+"@"+ ip_address + ":" +"554"+ "/Streaming/Channels/1"
+        camera_url = "rtsp://" + user_name + ":" + password + "@" + ip_address + ":" + int_port + "/Streaming/Channels/1"
         # check if the tiny weights are to be used
         if d_tiny:
             d_weight = tiny_weight_and_size
@@ -57,9 +65,9 @@ def prepare_command(data):
             d_weight = normal_weight_and_size
         # check if a video is to be used for detection
         if det_type == "video":
-            command = detect_with_video + d_weight + model + video_par + path + output_par + output_path + output_file
+            command = detect_with_video + d_weight + model + video_par + camera_url + output_par + output_path + output_file
         else:
-            command = detect_with_image + d_weight + model + image_par + path + output_par + output_path + output_file
+            command = detect_with_image + d_weight + model + image_par + camera_url + output_par + output_path + output_file
         # check if the tiny weights are to be used
         if d_tiny:
             command = command + tiny_par
@@ -73,7 +81,13 @@ def prepare_command(data):
         if d_plate:
             command = command + plate_par
 
-        return command, path
+        # add ip adress to command
+        command = command + ip_address_par + ip_address
+
+        # add vehicle direction parameters
+        command = command + vehicle_side_par + vehicle_side
+
+        return command, ip_address
 
     except (KeyError, TypeError, ValueError):
 
@@ -89,10 +103,11 @@ def run_detection(command):
 @app.route("/run-license-detection", methods=['POST'])
 def main():
     data = request.get_json(force=True)
-    command, path = prepare_command(data)
+    command, ip_address = prepare_command(data)
     run_detection(command)
-    json_response(status=200, message="Detection running on" + path)
-    return "Detection running on" + path, 200
+    json_response(status=200, message="Detection running on" + ip_address)
+    return "Detection running on" + ip_address, 200
+
 
 ## picture detection method
 

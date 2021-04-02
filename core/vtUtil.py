@@ -59,10 +59,10 @@ def recognize_vt_plate(img, coords):
     rect = cv2.medianBlur(rect, 5)
     # rect = cv2.bitwise_not(rect)
     # perform another blur on character region
-    rect = cv2.medianBlur(rect, 5)
+    rect = cv2.medianBlur(rect, 7)
     # perform another blur on character region
-    cv2.imshow("rect", rect)
-    cv2.waitKey(0)
+    # cv2.imshow("rect", rect)
+    # cv2.waitKey(0)
     # create blank string to hold license plate number
     plate_num = ""
     try:

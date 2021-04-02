@@ -28,6 +28,8 @@ flags.DEFINE_string('weights', './checkpoints/yolov4-416',
 flags.DEFINE_integer('size', 416, 'resize images to')
 flags.DEFINE_boolean('tiny', False, 'yolo or yolo-tiny')
 flags.DEFINE_string('model', 'yolov4', 'yolov3 or yolov4')
+flags.DEFINE_string('ip_address', '192.168.0.1', 'ip address of the device capturing')
+flags.DEFINE_string('vehicle_side', 'front', 'back or front of vehicle ?')
 flags.DEFINE_string('video', './data/video/video.mp4', 'path to input video or set to 0 for webcam')
 flags.DEFINE_string('output', None, 'path to output video')
 flags.DEFINE_string('output_format', 'XVID', 'codec used in VideoWriter when saving video to file')
@@ -86,7 +88,12 @@ def main(_argv):
             image = Image.fromarray(frame)
         else:
             print('Video has ended or failed, try a different video format!')
-            break
+
+            vid = cv2.VideoCapture(video_path)
+            return_value, frame = vid.read()
+            frame = cv2.cvtColor(frame, cv2.COLOR_BGR2RGB)
+            frame_num += 1
+            image = Image.fromarray(frame)
 
         frame_size = frame.shape[:2]
         image_data = cv2.resize(frame, (input_size, input_size))
@@ -172,9 +179,9 @@ def main(_argv):
         result = np.asarray(image)
         cv2.namedWindow("result", cv2.WINDOW_AUTOSIZE)
         result = cv2.cvtColor(image, cv2.COLOR_RGB2BGR)
-
+        vehicle_side = FLAGS.vehicle_side
         ## try to capture path and plate number
-        return_detected_plate_details(final_path, plate_number)
+        # return_detected_plate_details(final_path, plate_number, vehicle_side)
 
         if not FLAGS.dont_show:
             cv2.imshow("result", result)

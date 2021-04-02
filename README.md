@@ -203,6 +203,8 @@ Try it out on this image in the repository!
 # Run License Plate Recognition
 python detect.py --weights ./checkpoints/custom-416 --size 416 --model yolov4 --images ./data/images/car2.jpg --plate
 python detect.py --weights ./checkpoints/yolov4-License-Plate-416 --size 416 --model yolov4 --images ./data/images/car6.jpg --plate
+python detect_video.py --weights ./checkpoints/yolov4-License-Plate-416 --size 416 --model yolov4 --video rtsp://admin:Admin1234@192.168.1.64:554/Streaming/Channels/1/picture  --plate --crop
+python detect_video.py --weights ./checkpoints/yolov4-tiny-license-plate-416 --size 416 --model yolov4 --video rtsp://admin:Admin1234@192.168.1.64:554/Streaming/Channels/2  --plate --crop --tiny
 python detect.py --weights ./checkpoints/yolov4-License-Plate-416 --size 416 --model yolov4 --images ./data/images/borderTests/license1.jpg --plate
 ```
 

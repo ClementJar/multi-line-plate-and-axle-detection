@@ -21,6 +21,7 @@ from tensorflow.compat.v1 import ConfigProto
 from tensorflow.compat.v1 import InteractiveSession
 
 flags.DEFINE_string('framework', 'tf', '(tf, tflite, trt')
+flags.DEFINE_string('ip_address', '192.168.0.1', 'ip address of the device capturing')
 flags.DEFINE_string('weights', './checkpoints/yolov4-416',
                     'path to weights file')
 flags.DEFINE_integer('size', 416, 'resize images to')
@@ -45,6 +46,7 @@ def main(_argv):
     STRIDES, ANCHORS, NUM_CLASS, XYSCALE = utils.load_config(FLAGS)
     input_size = FLAGS.size
     images = FLAGS.images
+    ip_address = FLAGS.ip_address
 
     # load model
     if FLAGS.framework == 'tflite':
@@ -120,7 +122,7 @@ def main(_argv):
         final_path = ""
         # if crop flag is enabled, crop each detection and save it as new image
         if FLAGS.crop:
-            crop_path = os.path.join("C:\\app_upload\\uploads\\tempVehicleDetails", image_name)
+            crop_path = os.path.join("C:\\app_upload\\uploads\\tempVehicleDetails", ip_address)
             try:
                 os.mkdir(crop_path)
             except FileExistsError:
@@ -145,7 +147,7 @@ def main(_argv):
                                                   allowed_classes=allowed_classes, read_plate=FLAGS.plate)
 
         ## try to capture path and plate number
-        return_detected_plate_details(os.path.join(image_name, final_path), plate_number)
+        return_detected_plate_details(os.path.join(ip_address, final_path), plate_number)
 
         image = Image.fromarray(image.astype(np.uint8))
         if not FLAGS.dont_show:
