@@ -70,6 +70,12 @@ def main(_argv):
         vid = cv2.VideoCapture(video_path)
 
     out = None
+    # set region of interest
+    r = (602, 377, 538, 239)
+    x1 = int(r[0])
+    x2 = int(r[0] + r[2])
+    y1 = int(r[1])
+    y2 = int(r[1] + r[3])
 
     if FLAGS.output:
         # by default VideoCapture returns float instead of int
@@ -82,8 +88,13 @@ def main(_argv):
     frame_num = 0
     while True:
         return_value, frame = vid.read()
+
         if return_value:
-            frame = cv2.cvtColor(frame, cv2.COLOR_BGR2RGB)
+            cv2.rectangle(frame, (x1, y1), (x2, y2), (255, 0, 0), 2)
+            # Crop image
+            cropped_frame = frame[y1:y2, x1:x2]
+
+            frame = cv2.cvtColor(cropped_frame, cv2.COLOR_BGR2RGB)
             frame_num += 1
             image = Image.fromarray(frame)
         else:
@@ -91,7 +102,11 @@ def main(_argv):
 
             vid = cv2.VideoCapture(video_path)
             return_value, frame = vid.read()
-            frame = cv2.cvtColor(frame, cv2.COLOR_BGR2RGB)
+            # set region of interest
+            cv2.rectangle(frame, (x1, y1), (x2, y2), (255, 0, 0), 2)
+            # Crop image
+            cropped_frame = frame[y1:y2, x1:x2]
+            frame = cv2.cvtColor(cropped_frame, cv2.COLOR_BGR2RGB)
             frame_num += 1
             image = Image.fromarray(frame)
 
@@ -130,49 +145,57 @@ def main(_argv):
 
         # format bounding boxes from normalized ymin, xmin, ymax, xmax ---> xmin, ymin, xmax, ymax
         original_h, original_w, _ = frame.shape
+
         bboxes = utils.format_boxes(boxes.numpy()[0], original_h, original_w)
 
         pred_bbox = [bboxes, scores.numpy()[0], classes.numpy()[0], valid_detections.numpy()[0]]
+        bbox = pred_bbox[0]
+        # create a line in the middle of the frame for the license plate recognition the line will be horizonta;
+        cv2.line(frame, (0, int(3 * original_h / 6)), (original_w, int(3 * original_h / 6)), (0, 255, 0), thickness=2)
+        # get center_y
+        center_y = int(((bbox[1])+(bbox[3]))/2)
 
-        # read in all class names from config
-        class_names = utils.read_class_names(cfg.YOLO.CLASSES)
+        if center_y <= int(3 * original_h / 6 + original_h/30) and center_y >= int(3 * original_h / 6 - original_h/30):
+                print("something has crossed the line")
+                # read in all class names from config
+                class_names = utils.read_class_names(cfg.YOLO.CLASSES)
 
-        # by default allow all classes in .names file
-        allowed_classes = list(class_names.values())
+                # by default allow all classes in .names file
+                allowed_classes = list(class_names.values())
 
-        # custom allowed classes (uncomment line below to allow detections for only people)
-        # allowed_classes = ['person']
-        # initialise path
-        final_path = ""
-        # if crop flag is enabled, crop each detection and save it as new image
-        if FLAGS.crop:
-            crop_rate = 150  # capture images every so many frames (ex. crop photos every 150 frames)
-            crop_path = os.path.join(os.getcwd(), 'detections', 'crop', video_name)
-            try:
-                os.mkdir(crop_path)
-            except FileExistsError:
-                pass
-            if frame_num % crop_rate == 0:
-                final_path = os.path.join(crop_path, 'frame_' + str(frame_num))
-                try:
-                    os.mkdir(final_path)
-                except FileExistsError:
-                    pass
-                crop_objects(cv2.cvtColor(frame, cv2.COLOR_BGR2RGB), pred_bbox, final_path, allowed_classes)
-            else:
-                pass
+                # custom allowed classes (uncomment line below to allow detections for only people)
+                # allowed_classes = ['person']
+                # initialise path
+                final_path = ""
+                # if crop flag is enabled, crop each detection and save it as new image
+                if FLAGS.crop:
+                    crop_rate = 150  # capture images every so many frames (ex. crop photos every 150 frames)
+                    crop_path = os.path.join(os.getcwd(), 'detections', 'crop', video_name)
+                    try:
+                        os.mkdir(crop_path)
+                    except FileExistsError:
+                        pass
+                    if frame_num % crop_rate == 0:
+                        final_path = os.path.join(crop_path, 'frame_' + str(frame_num))
+                        try:
+                            os.mkdir(final_path)
+                        except FileExistsError:
+                            pass
+                        crop_objects(cv2.cvtColor(frame, cv2.COLOR_BGR2RGB), pred_bbox, final_path, allowed_classes)
+                    else:
+                        pass
 
-        if FLAGS.count:
-            # count objects found
-            counted_classes = count_objects(pred_bbox, by_class=True, allowed_classes=allowed_classes)
-            # loop through dict and print
-            for key, value in counted_classes.items():
-                print("Number of {}s: {}".format(key, value))
-            image, plate_number = utils.draw_bbox(frame, pred_bbox, FLAGS.info, counted_classes,
-                                                  allowed_classes=allowed_classes, read_plate=FLAGS.plate)
-        else:
-            image, plate_number = utils.draw_bbox(frame, pred_bbox, FLAGS.info, allowed_classes=allowed_classes,
-                                                  read_plate=FLAGS.plate)
+        # if FLAGS.count:
+        #     # count objects found
+        #     counted_classes = count_objects(pred_bbox, by_class=True, allowed_classes=allowed_classes)
+        #     # loop through dict and print
+        #     for key, value in counted_classes.items():
+        #         print("Number of {}s: {}".format(key, value))
+        #     image, plate_number = utils.draw_bbox(frame, pred_bbox, FLAGS.info, counted_classes,
+        #                                           allowed_classes=allowed_classes, read_plate=FLAGS.plate)
+        # else:
+        #     image, plate_number = utils.draw_bbox(frame, pred_bbox, FLAGS.info, allowed_classes=allowed_classes,
+        #                                           read_plate=FLAGS.plate)
 
         fps = 1.0 / (time.time() - start_time)
         print("FPS: %.2f" % fps)
