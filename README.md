@@ -76,10 +76,10 @@ python save_model.py --weights ./data/yolov4.weights --output ./checkpoints/yolo
 python detect.py --weights ./checkpoints/yolov4-416 --size 416 --model yolov4 --images ./data/images/kite.jpg
 
 # Run yolov4 on video
-python detect_video.py --weights ./checkpoints/yolov4-416 --size 416 --model yolov4 --video ./data/video/video.mp4 --output ./detections/results.avi
+python detect_plate.py --weights ./checkpoints/yolov4-416 --size 416 --model yolov4 --video ./data/video/video.mp4 --output ./detections/results.avi
 
 # Run yolov4 on webcam
-python detect_video.py --weights ./checkpoints/yolov4-416 --size 416 --model yolov4 --video 0 --output ./detections/results.avi
+python detect_plate.py --weights ./checkpoints/yolov4-416 --size 416 --model yolov4 --video 0 --output ./detections/results.avi
 ```
 If you want to run yolov3 or yolov3-tiny change ``--model yolov3`` and .weights file in above commands.
 
@@ -205,6 +205,10 @@ python detect.py --weights ./checkpoints/custom-416 --size 416 --model yolov4 --
 python detect.py --weights ./checkpoints/yolov4-License-Plate-416 --size 416 --model yolov4 --images ./data/images/car6.jpg --plate
 python detect_video.py --weights ./checkpoints/yolov4-License-Plate-416 --size 416 --model yolov4 --video rtsp://admin:Admin1234@192.168.1.64:554/Streaming/Channels/1/picture  --plate --crop
 python detect_video.py --weights ./checkpoints/yolov4-License-Plate-416 --size 416 --model yolov4 --video rtsp://admin:Admin1234@192.168.8.65:554/Streaming/Channels/1  --plate --crop
+python detect_video.py --weights ./checkpoints/yolov4-License-Plate-416 --size 416 --model yolov4 --video ./data/video/car3.mp4  --plate --crop
+python axle_count.py --weights ./checkpoints/axle_yolov4-tiny-416 --size 416 --model yolov4 --video ./data/video/car_axle.mp4 --tiny
+python detect_video.py --weights ./checkpoints/yolov4-tiny-license-plate-416 --size 416 --model yolov4 --video ./data/video/license_plate.mp4  --plate --crop --tiny
+python detect_video.py --weights ./checkpoints/yolov4-tiny-license-plate-416 --size 416 --model yolov4 --video ./data/video/car2.mp4  --plate --crop --tiny
 python detect_video.py --weights ./checkpoints/yolov4-tiny-license-plate-416 --size 416 --model yolov4 --video rtsp://admin:Admin1234@192.168.1.64:554/Streaming/Channels/2  --plate --crop --tiny
 python detect.py --weights ./checkpoints/yolov4-License-Plate-416 --size 416 --model yolov4 --images ./data/images/borderTests/license1.jpg --plate
 ```
@@ -358,7 +362,7 @@ detect.py:
   --crop: crop detections and save as new images
     (default: False)
     
-detect_video.py:
+detect_plate.py:
   --video: path to input video (use 0 for webcam)
     (default: './data/video/video.mp4')
   --output: path to output video (remember to set right codec for given format. e.g. XVID for .avi)

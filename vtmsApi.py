@@ -18,7 +18,7 @@ app = Flask(__name__)
 
 
 def prepare_command(data):
-    detect_with_video = "python detect_video.py "
+    detect_with_video = "python detect_plate.py "
     detect_with_image = "python detect.py "
     normal_weight_and_size = " --weights ./checkpoints/yolov4-License-Plate-416 --size 416 "
     tiny_weight_and_size = " --weights ./checkpoints/yolov4-License-Plate-416 --size 416 "

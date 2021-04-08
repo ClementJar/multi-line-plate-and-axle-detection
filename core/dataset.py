@@ -2,12 +2,10 @@
 # coding=utf-8
 
 import os
-import random
-
 import cv2
+import random
 import numpy as np
 import tensorflow as tf
-
 import core.utils as utils
 from core.config import cfg
 
