@@ -71,6 +71,10 @@ def main(_argv):
         vid = cv2.VideoCapture(video_path)
 
     out = None
+    if True:
+     Fvalue, frame = vid.read()
+    # set region of interest
+    # r = cv2.selectROI(frame)
     # set region of interest
     r = (602, 377, 538, 239)
     x1 = int(r[0])
@@ -88,31 +92,31 @@ def main(_argv):
 
     frame_num = 0
     while True:
-        return_value, frame = vid.read()
+        return_value, original_frame = vid.read()
 
         if return_value:
-            cv2.rectangle(frame, (x1, y1), (x2, y2), (255, 0, 0), 2)
+            cv2.rectangle(original_frame, (x1, y1), (x2, y2), (255, 0, 0), 2)
             # Crop image
-            cropped_frame = frame[y1:y2, x1:x2]
+            cropped_frame = original_frame[y1:y2, x1:x2]
 
-            frame = cv2.cvtColor(cropped_frame, cv2.COLOR_BGR2RGB)
+            cropped_frame = cv2.cvtColor(cropped_frame, cv2.COLOR_BGR2RGB)
             frame_num += 1
-            image = Image.fromarray(frame)
+            image = Image.fromarray(cropped_frame)
         else:
             print('Video has ended or failed, try a different video format!')
 
             vid = cv2.VideoCapture(video_path)
-            return_value, frame = vid.read()
+            return_value, original_frame = vid.read()
             # set region of interest
-            cv2.rectangle(frame, (x1, y1), (x2, y2), (255, 0, 0), 2)
+            cv2.rectangle(original_frame, (x1, y1), (x2, y2), (255, 0, 0), 2)
             # Crop image
-            cropped_frame = frame[y1:y2, x1:x2]
-            frame = cv2.cvtColor(cropped_frame, cv2.COLOR_BGR2RGB)
+            cropped_frame = original_frame[y1:y2, x1:x2]
+            cropped_frame = cv2.cvtColor(cropped_frame, cv2.COLOR_BGR2RGB)
             frame_num += 1
-            image = Image.fromarray(frame)
+            image = Image.fromarray(cropped_frame)
 
-        frame_size = frame.shape[:2]
-        image_data = cv2.resize(frame, (input_size, input_size))
+        frame_size = cropped_frame.shape[:2]
+        image_data = cv2.resize(cropped_frame, (input_size, input_size))
         image_data = image_data / 255.
         image_data = image_data[np.newaxis, ...].astype(np.float32)
         start_time = time.time()
@@ -134,7 +138,7 @@ def main(_argv):
         )
 
         # format bounding boxes from normalized ymin, xmin, ymax, xmax ---> xmin, ymin, xmax, ymax
-        original_h, original_w, _ = frame.shape
+        original_h, original_w, _ = cropped_frame.shape
 
         bboxes = utils.format_boxes(boxes.numpy()[0], original_h, original_w)
 
@@ -178,26 +182,26 @@ def main(_argv):
                         os.mkdir(final_path)
                     except FileExistsError:
                         pass
-                    crop_objects(cv2.cvtColor(frame, cv2.COLOR_BGR2RGB), pred_bbox, final_path, allowed_classes)
+                    crop_objects(cv2.cvtColor(cropped_frame, cv2.COLOR_BGR2RGB), pred_bbox, final_path, allowed_classes)
                 else:
                     pass
 
 
-            image, plate_number = utils.draw_bbox(frame, pred_bbox, FLAGS.info, allowed_classes=allowed_classes,
+            image, plate_number = utils.draw_bbox(cropped_frame, pred_bbox, FLAGS.info, allowed_classes=allowed_classes,
                                                   read_plate=FLAGS.plate)
             # show center y
-            cv2.line(frame, (0, int(((bbox[1]) + (bbox[3])) / 2)),
+            cv2.line(cropped_frame, (0, int(((bbox[1]) + (bbox[3])) / 2)),
                      (original_w, int(((bbox[1]) + (bbox[3])) / 2)), (0, 255, 255), thickness=1)
 
             vehicle_side = FLAGS.vehicle_side
             ## try to capture path and plate number
-            return_detected_plate_details(final_path, plate_number, vehicle_side)
+            # return_detected_plate_details(final_path, plate_number, vehicle_side)
 
         else:
-            image, plate_number = utils.draw_bbox(frame, pred_bbox, FLAGS.info, allowed_classes=allowed_classes,
+            image, plate_number = utils.draw_bbox(cropped_frame, pred_bbox, FLAGS.info, allowed_classes=allowed_classes,
                                                   read_plate=False)
             # show center y
-            cv2.line(frame, (0, int(((bbox[1]) + (bbox[3])) / 2)), (original_w, int(((bbox[1]) + (bbox[3])) / 2)),
+            cv2.line(cropped_frame, (0, int(((bbox[1]) + (bbox[3])) / 2)), (original_w, int(((bbox[1]) + (bbox[3])) / 2)),
                      (0, 255, 255), thickness=1)
 
         fps = 1.0 / (time.time() - start_time)
@@ -207,7 +211,8 @@ def main(_argv):
         result = cv2.cvtColor(image, cv2.COLOR_RGB2BGR)
 
         if not FLAGS.dont_show:
-            cv2.imshow("result", result)
+            # cv2.imshow("result", result)
+            cv2.imshow("Full Frame View", original_frame)
 
         if FLAGS.output:
             out.write(result)

@@ -15,14 +15,14 @@ def return_detected_plate_details(path, plate_num, vehicle_side):
 
 
 
-def return_detected_axle_details(axle_count):
+def return_detected_axle_details(axle_count, ip_address):
     # create JSON
-    url = "http://localhost:7002/vtms/api/saveLicensePlateInfo"
+    url = "http://localhost:7002/vtms/api/saveAxleInfo"
 
     headers = CaseInsensitiveDict()
     headers["Content-Type"] = "application/json"
     # create JSON
 
-    data = '{"axle_count" :' + axle_count + '}'
+    data = '{"axle_count" :' + axle_count + ',"axle_count" :' + ip_address + '}'
 
     requests.post(url, headers=headers, data=data)

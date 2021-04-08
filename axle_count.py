@@ -93,21 +93,40 @@ def main(_argv):
         fps = int(vid.get(cv2.CAP_PROP_FPS))
         codec = cv2.VideoWriter_fourcc(*FLAGS.output_format)
         out = cv2.VideoWriter(FLAGS.output, codec, fps, (width, height))
-    frame_counter = 10
+    frame_counter = 500
     frame_num = 0
+    initial_time = time.time()
+
+    # if True:
+    #    value, frame = vid.read()
+    # # set region of interest
+    # r = cv2.selectROI(frame)
+    # cv2.destroyAllWindows()
+    # # r = (602, 377, 538, 239)
+    # x1 = int(r[0])
+    # x2 = int(r[0] + r[2])
+    # y1 = int(r[1])
+    # y2 = int(r[1] + r[3])
     # while video is running
     while True:
-        return_value, frame = vid.read()
+        return_value, original_frame = vid.read()
         if return_value:
-            frame = cv2.cvtColor(frame, cv2.COLOR_BGR2RGB)
-            image = Image.fromarray(frame)
+            # cv2.rectangle(original_frame, (x1, y1), (x2, y2), (255, 0, 0), 2)
+            # Crop image
+            # cropped_frame = original_frame[y1:y2, x1:x2]
+            original_frame = cv2.cvtColor(original_frame, cv2.COLOR_BGR2RGB)
+            image = Image.fromarray(original_frame)
         else:
             print('Video has ended or failed, try a different video format!')
-            break
+            vid = cv2.VideoCapture(video_path)
+            return_value, original_frame = vid.read()
+            original_frame = cv2.cvtColor(original_frame, cv2.COLOR_BGR2RGB)
+            image = Image.fromarray(original_frame)
+
         frame_num +=1
         print('Frame #: ', frame_num)
-        frame_size = frame.shape[:2]
-        image_data = cv2.resize(frame, (input_size, input_size))
+        frame_size = original_frame.shape[:2]
+        image_data = cv2.resize(original_frame, (input_size, input_size))
         image_data = image_data / 255.
         image_data = image_data[np.newaxis, ...].astype(np.float32)
         start_time = time.time()
@@ -151,7 +170,7 @@ def main(_argv):
         classes = classes[0:int(num_objects)]
 
         # format bounding boxes from normalized ymin, xmin, ymax, xmax ---> xmin, ymin, width, height
-        original_h, original_w, _ = frame.shape
+        original_h, original_w, _ = original_frame.shape
         bboxes = utils.format_boxes(bboxes, original_h, original_w)
 
         # store all predictions in one parameter for simplicity when calling functions
@@ -186,7 +205,7 @@ def main(_argv):
         scores = np.delete(scores, deleted_indx, axis=0)
 
         # encode yolo detections and feed to tracker
-        features = encoder(frame, bboxes)
+        features = encoder(original_frame, bboxes)
         detections = [Detection(bbox, score, class_name, feature) for bbox, score, class_name, feature in zip(bboxes, scores, names, features)]
 
         #initialize color map
@@ -216,46 +235,55 @@ def main(_argv):
             # draw bbox on screen
             color = colors[int(track.track_id) % len(colors)]
             color = [i * 255 for i in color]
-            cv2.rectangle(frame, (int(bbox[0]), int(bbox[1])), (int(bbox[2]), int(bbox[3])), color, 2)
-            cv2.rectangle(frame, (int(bbox[0]), int(bbox[1]-30)), (int(bbox[0])+(len(class_name)+len(str(track.track_id)))*17, int(bbox[1])), color, -1)
-            cv2.putText(frame, class_name + "-" + str(track.track_id),(int(bbox[0]), int(bbox[1]-10)),0, 0.75, (255,255,255),2)
-
+            cv2.rectangle(original_frame, (int(bbox[0]), int(bbox[1])), (int(bbox[2]), int(bbox[3])), color, 2)
+            cv2.rectangle(original_frame, (int(bbox[0]), int(bbox[1]-30)), (int(bbox[0])+(len(class_name)+len(str(track.track_id)))*17, int(bbox[1])), color, -1)
+            cv2.putText(original_frame, class_name + "-" + str(track.track_id),(int(bbox[0]), int(bbox[1]-10)),0, 0.75, (255,255,255),2)
 
             # lets count our axles
             # create a line in the middle of the frame for the license plate recognition the line will be horizonta;
-            cv2.line(frame, (int(3 * original_w / 6), 0), (int(3 * original_w / 6), original_h), (0, 255, 0),
+            cv2.line(original_frame, (int ((original_w / 2) - 100), int(3 * original_h /7)), (int ((original_w / 2) + 100), int(3 * original_h /7)), (0, 255, 0),
                      thickness=2)
-            # get center_y
-            center_x = int(((bbox[0]) + (bbox[2])) / 2)
 
-            if center_x <= int(3 * original_w / 6 + original_w / 90) and center_x >= int(
-                    3 * original_w / 6 - original_w / 90):
+            center_x = int(((bbox[0]) + (bbox[2])) / 2)
+            center_y = int(((bbox[1]) + (bbox[3])) / 2)
+
+            if center_x <= int(3 * original_w / 6 + original_w / 90) and center_x >= int(3 * original_w / 6 - original_w / 90) and center_y >= int(3 * original_h /7):
                 print("something has crossed the line")
-                counter.append(int(track.track_id))
                 current_count += 1
-                frame_counter = 10
+                if int(track.track_id) not in counter:
+                    counter.append(int(track.track_id))
+                    initial_time = time.time() - 50
+                    print("different axle")
             else:
                 frame_counter = abs(frame_counter) - 1
 
             total_count = len(set(counter))
-            cv2.putText(frame, "Total Axle Count: " + str(total_count), (0, 130), 0, 1, (0, 0, 255), 2)
+            cv2.putText(original_frame, "Total Axle Count: " + str(total_count), (0, 130), 0, 1, (0, 0, 255), 2)
+            cv2.putText(original_frame, "Current Axle Count: " + str(current_count), (0, 80), 0, 1, (0, 0, 255), 2)
+
         print("frame count =" + str(frame_counter))
-        if frame_counter == 0 and total_count > 0:
+        current_time = time.time() - initial_time
+
+        if current_time >= 100:
+            print("Total count =" + str(total_count))
             total_count = 0
-            return_detected_axle_details(total_count)
+            return_detected_axle_details(total_count, FLAGS.ip_address)
         # if enable info flag then print details about each track
         if FLAGS.info:
             print("Tracker ID: {}, Class: {},  BBox Coords (xmin, ymin, xmax, ymax): {}".format
                   (str(track.track_id), class_name, (int(bbox[0]), int(bbox[1]), int(bbox[2]), int(bbox[3]))))
 
         # calculate frames per second of running detections
+
         fps = 1.0 / (time.time() - start_time)
         print("FPS: %.2f" % fps)
-        result = np.asarray(frame)
-        result = cv2.cvtColor(frame, cv2.COLOR_RGB2BGR)
+        print("Time: %.2f" % current_time)
+        result = np.asarray(original_frame)
+        result = cv2.cvtColor(original_frame, cv2.COLOR_RGB2BGR)
 
         if not FLAGS.dont_show:
-            cv2.imshow("Output Video", result)
+            # cv2.imshow("cropped_frame", cropped_frame)
+            cv2.imshow("original_frame", result)
 
         # if output flag is set, save video file
         if FLAGS.output:
