@@ -195,7 +195,7 @@ def main(_argv):
 
             vehicle_side = FLAGS.vehicle_side
             ## try to capture path and plate number
-            # return_detected_plate_details(final_path, plate_number, vehicle_side)
+            # return_detected_plate_details(final_path, plate_number, vehicle_side, FLAGS.ip_address)
 
         else:
             image, plate_number = utils.draw_bbox(cropped_frame, pred_bbox, FLAGS.info, allowed_classes=allowed_classes,
