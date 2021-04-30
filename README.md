@@ -99,6 +99,7 @@ The following commands will allow you to run yolov4-tiny model.
 ```
 # yolov4-tiny
 python save_model.py --weights ./data/yolov4-tiny.weights --output ./checkpoints/yolov4-tiny-416 --input_size 416 --model yolov4 --tiny
+python save_model.py --weights ./data/yolov4-tiny.weights --output ./checkpoints/yolov4-tiny-416 --input_size 416 --model yolov4 --tiny
 
 # Run yolov4-tiny tensorflow model
 python detect.py --weights ./checkpoints/yolov4-tiny-416 --size 416 --model yolov4 --images ./data/images/kite.jpg --tiny
@@ -110,6 +111,8 @@ The following commands will allow you to run your custom yolov4 model. (video an
 ```
 # custom yolov4
 python save_model.py --weights ./data/custom.weights --output ./checkpoints/custom-416 --input_size 416 --model yolov4 
+python save_model.py --weights ./data/axle-yolov4-final.weights --output ./checkpoints/axle-yolov4-final-416 --input_size 416 --model yolov4 
+python save_model.py --weights ./data/yolov4-License-Plate.weights --output ./checkpoints/yolo4-license-plate-416 --input_size 416 --model yolov4 
 
 # Run custom yolov4 tensorflow model
 python detect.py --weights ./checkpoints/custom-416 --size 416 --model yolov4 --images ./data/images/car.jpg
@@ -204,9 +207,12 @@ Try it out on this image in the repository!
 python detect.py --weights ./checkpoints/custom-416 --size 416 --model yolov4 --images ./data/images/car2.jpg --plate
 python detect.py --weights ./checkpoints/yolov4-License-Plate-416 --size 416 --model yolov4 --images ./data/images/car6.jpg --plate
 python detect_video.py --weights ./checkpoints/yolov4-License-Plate-416 --size 416 --model yolov4 --video rtsp://admin:Admin1234@192.168.1.64:554/Streaming/Channels/1/picture  --plate --crop
-python detect_video.py --weights ./checkpoints/yolov4-License-Plate-416 --size 416 --model yolov4 --video rtsp://admin:Admin1234@192.168.8.65:554/Streaming/Channels/1  --plate --crop
+python detect_video.py --weights ./checkpoints/yolov4-license-plate-416 --size 416 --model yolov4 --video rtsp://admin:Admin1234@192.168.8.65:554/Streaming/Channels/1  --plate --crop
 python detect_video.py --weights ./checkpoints/yolov4-License-Plate-416 --size 416 --model yolov4 --video ./data/video/car3.mp4  --plate --crop
-python axle_count.py --weights ./checkpoints/axle_yolov4-tiny-416 --size 416 --model yolov4 --video ./data/video/car_axle.mp4 --tiny
+python detect_plate.py --weights ./checkpoints/yolov4-license-plate-416 --size 416 --model yolov4 --video ./data/video/license_plate.mp4  --plate --crop
+python detect_plate.py --weights ./checkpoints/yolov4-license-plate-416 --size 416 --model yolov4 --video ./data/video/plate4.mp4  --plate --crop
+python axle_count.py --weights ./checkpoints/axle_yolov4-tiny-416 --size 416 --model yolov4 --video ./data/video/axle1.mp4 --tiny
+python axle_count.py --weights ./checkpoints/axle-yolov4-final-416 --size 416 --model yolov4 --video ./data/video/axle1.mp4
 python detect_video.py --weights ./checkpoints/yolov4-tiny-license-plate-416 --size 416 --model yolov4 --video ./data/video/license_plate.mp4  --plate --crop --tiny
 python detect_video.py --weights ./checkpoints/yolov4-tiny-license-plate-416 --size 416 --model yolov4 --video ./data/video/car2.mp4  --plate --crop --tiny
 python detect_video.py --weights ./checkpoints/yolov4-tiny-license-plate-416 --size 416 --model yolov4 --video rtsp://admin:Admin1234@192.168.1.64:554/Streaming/Channels/2  --plate --crop --tiny

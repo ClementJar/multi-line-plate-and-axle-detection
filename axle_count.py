@@ -33,6 +33,7 @@ flags.DEFINE_boolean('tiny', False, 'yolo or yolo-tiny')
 flags.DEFINE_string('model', 'yolov4', 'yolov3 or yolov4')
 flags.DEFINE_string('ip_address', '192.168.0.1', 'ip address of the device capturing')
 flags.DEFINE_string('vehicle_side', 'front', 'back or front of vehicle ?')
+flags.DEFINE_string('gate_id', '0', 'id of gate detection is being run on ?')
 flags.DEFINE_string('video', './data/video/video.mp4', 'path to input video or set to 0 for webcam')
 flags.DEFINE_string('output', None, 'path to output video')
 flags.DEFINE_string('output_format', 'XVID', 'codec used in VideoWriter when saving video to file')
@@ -97,16 +98,6 @@ def main(_argv):
     frame_num = 0
     initial_time = time.time()
 
-    # if True:
-    #    value, frame = vid.read()
-    # # set region of interest
-    # r = cv2.selectROI(frame)
-    # cv2.destroyAllWindows()
-    # # r = (602, 377, 538, 239)
-    # x1 = int(r[0])
-    # x2 = int(r[0] + r[2])
-    # y1 = int(r[1])
-    # y2 = int(r[1] + r[3])
     # while video is running
     while True:
         return_value, original_frame = vid.read()
@@ -118,6 +109,7 @@ def main(_argv):
             image = Image.fromarray(original_frame)
         else:
             print('Video has ended or failed, try a different video format!')
+
             vid = cv2.VideoCapture(video_path)
             return_value, original_frame = vid.read()
             original_frame = cv2.cvtColor(original_frame, cv2.COLOR_BGR2RGB)
@@ -252,7 +244,7 @@ def main(_argv):
                 current_count += 1
                 if int(track.track_id) not in counter:
                     counter.append(int(track.track_id))
-                    initial_time = time.time() - 50
+                    initial_time = time.time() - 80
                     print("different axle")
             else:
                 frame_counter = abs(frame_counter) - 1
@@ -264,10 +256,16 @@ def main(_argv):
         print("frame count =" + str(frame_counter))
         current_time = time.time() - initial_time
 
-        if current_time >= 100:
+        if current_time >= 150:
             print("Total count =" + str(total_count))
+            return_detected_axle_details(total_count, FLAGS.ip_address, FLAGS.gate_id)
             total_count = 0
-            return_detected_axle_details(total_count, FLAGS.ip_address)
+            # initialize the timer
+            initial_time = time.time()
+            # pause the program
+            time.sleep(50)
+            # re-Initialize tracker for new vehicle
+            tracker = Tracker(metric)
         # if enable info flag then print details about each track
         if FLAGS.info:
             print("Tracker ID: {}, Class: {},  BBox Coords (xmin, ymin, xmax, ymax): {}".format

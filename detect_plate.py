@@ -31,6 +31,7 @@ flags.DEFINE_boolean('tiny', False, 'yolo or yolo-tiny')
 flags.DEFINE_string('model', 'yolov4', 'yolov3 or yolov4')
 flags.DEFINE_string('ip_address', '192.168.0.1', 'ip address of the device capturing')
 flags.DEFINE_string('vehicle_side', 'front', 'back or front of vehicle ?')
+flags.DEFINE_string('gate_id', '0', 'id of gate detection is being run on ?')
 flags.DEFINE_string('video', './data/video/video.mp4', 'path to input video or set to 0 for webcam')
 flags.DEFINE_string('output', None, 'path to output video')
 flags.DEFINE_string('output_format', 'XVID', 'codec used in VideoWriter when saving video to file')
@@ -72,7 +73,7 @@ def main(_argv):
 
     out = None
     if True:
-     Fvalue, frame = vid.read()
+        Fvalue, frame = vid.read()
     # set region of interest
     # r = cv2.selectROI(frame)
     # set region of interest
@@ -160,33 +161,25 @@ def main(_argv):
         # by default allow all classes in .names file
         allowed_classes = list(class_names.values())
 
-        if center_y <= int(3 * original_h / 6 + original_h / 100) and center_y >= int(
-                3 * original_h / 6 - original_h / 100):
+        if center_y <= int(3 * original_h / 6 + original_h / 200) and center_y >= int(
+                3 * original_h / 6 - original_h / 200):
             print("something has crossed the line")
 
             # custom allowed classes (uncomment line below to allow detections for only people)
             # allowed_classes = ['person']
             # initialise path
-            final_path = ""
+            ip_address = FLAGS.ip_address
+            img_name = ""
             # if crop flag is enabled, crop each detection and save it as new image
             if FLAGS.crop:
-                crop_rate = 150  # capture images every so many frames (ex. crop photos every 150 frames)
-                crop_path = os.path.join(os.getcwd(), 'detections', 'crop', video_name)
+                crop_path = os.path.join('C:\\app_upload\\uploads\\tempVehicleDetails\\', ip_address)
                 try:
                     os.mkdir(crop_path)
                 except FileExistsError:
                     pass
-                if frame_num % crop_rate == 0:
-                    final_path = os.path.join(crop_path, 'frame_' + str(frame_num))
-                    try:
-                        os.mkdir(final_path)
-                    except FileExistsError:
-                        pass
-                    crop_objects(cv2.cvtColor(cropped_frame, cv2.COLOR_BGR2RGB), pred_bbox, final_path, allowed_classes)
-                else:
-                    pass
+                img_name = crop_objects(cv2.cvtColor(cropped_frame, cv2.COLOR_BGR2RGB), pred_bbox, crop_path, allowed_classes, ip_address)
 
-
+            final_img_path = os.path.join(ip_address, img_name)
             image, plate_number = utils.draw_bbox(cropped_frame, pred_bbox, FLAGS.info, allowed_classes=allowed_classes,
                                                   read_plate=FLAGS.plate)
             # show center y
@@ -194,21 +187,25 @@ def main(_argv):
                      (original_w, int(((bbox[1]) + (bbox[3])) / 2)), (0, 255, 255), thickness=1)
 
             vehicle_side = FLAGS.vehicle_side
-            ## try to capture path and plate number
-            # return_detected_plate_details(final_path, plate_number, vehicle_side, FLAGS.ip_address)
+            gate_id = FLAGS.gate_id
+            # check if its not a failed recognition
+            if plate_number != "":
+                ## try to capture path and plate number
+                return_detected_plate_details(final_img_path, plate_number, vehicle_side, ip_address, gate_id)
 
         else:
             image, plate_number = utils.draw_bbox(cropped_frame, pred_bbox, FLAGS.info, allowed_classes=allowed_classes,
                                                   read_plate=False)
             # show center y
-            cv2.line(cropped_frame, (0, int(((bbox[1]) + (bbox[3])) / 2)), (original_w, int(((bbox[1]) + (bbox[3])) / 2)),
+            cv2.line(cropped_frame, (0, int(((bbox[1]) + (bbox[3])) / 2)),
+                     (original_w, int(((bbox[1]) + (bbox[3])) / 2)),
                      (0, 255, 255), thickness=1)
 
         fps = 1.0 / (time.time() - start_time)
         print("FPS: %.2f" % fps)
-        result = np.asarray(image)
-        cv2.namedWindow("result", cv2.WINDOW_AUTOSIZE)
-        result = cv2.cvtColor(image, cv2.COLOR_RGB2BGR)
+        # result = np.asarray(image)
+        # cv2.namedWindow("result", cv2.WINDOW_AUTOSIZE)
+        # result = cv2.cvtColor(image, cv2.COLOR_RGB2BGR)
 
         if not FLAGS.dont_show:
             # cv2.imshow("result", result)
