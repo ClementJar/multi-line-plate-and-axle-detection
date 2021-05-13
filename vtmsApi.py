@@ -28,8 +28,12 @@ def prepare_command(data):
     ip_address_par = " --ip_address "
     vehicle_side_par = " --vehicle_side "  # back or front of vehicle
     gate_id_par = " --gate_id "  # back or front of vehicle
-    image_par = " --images "
-    output_par = " --output "
+    username_par = " --username "
+    password_par = " --password "
+    front_right_par = " --front_right "
+    front_left_par = " --front_left "
+    back_right_par = " --back_right "
+    back_left_par = " --back_left "
     count_par = " --count "
     crop_par = " --crop "
     plate_par = " --plate "
@@ -56,6 +60,12 @@ def prepare_command(data):
         d_crop = bool(data['crop'])  # whether to crop media or not
         d_plate = bool(data['plate'])  # plate recognition or not
         d_tiny = bool(data['tiny'])  # use tiny weights or not
+
+        # 360 image ip adresses
+        front_right = data['frontRightIp']  # ip address of device capturing front right o vehicle
+        front_left = data['frontLeftIp']  # ip address of device capturing front left of vehicle
+        back_right = data['backRightIp']  # ip address of device capturing back right of vehicle
+        back_left = data['backLeftIp']  # ip address of device capturing back left of vehicle
 
         file_name, file_ext = os.path.splitext(path)
         output_file = path + "-" + output_file.strftime("%H:%M:%S") + file_ext
@@ -94,6 +104,9 @@ def prepare_command(data):
 
         # add gate parameter
         command = command + gate_id_par + gate_id
+
+        # add 360 ip addresses....(i know the command is extra extra long now.. but)
+        command = command + back_left_par + back_left + back_right_par + back_right + front_left_par + front_left + front_right_par + front_right
 
         return command, ip_address
 

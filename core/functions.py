@@ -61,7 +61,57 @@ def crop_objects(img, data, path, allowed_classes, ip_address):
             continue
 
 
-# function to run general Tesseract OCR on any detections 
+# function for cropping each detection and saving as new image
+def write_360_img(ip_addresses, credentials):
+    img_locations = {}
+    username = credentials['username']
+    password = credentials['password']
+    # loop through all values in ip_addresses, capture images, store images and finally send back locations
+    for k, v in ip_addresses.items():
+        # the side of the vehicle is the k in the dictionary
+        # e.g {BACK_LEFT : 192.1.2.3,BACK_RIGHT : 192.4.5.6}
+        side = k
+        ip_address = v
+        #  start capture stream
+        # construct url
+        url = 'rtsp://' + username + ':' + password + '@' + ip_address + ':554/Streaming/Channels/1'
+        # define a video capture object
+        vid = cv2.VideoCapture("./data/video/plate4.mp4")
+
+        while True:
+            # Capture the video frame
+            # by frame
+            ret, frame = vid.read()
+
+            if ret:
+                # Display the resulting frame
+                # cv2.imshow('frame', frame)
+                # cv2.waitKey(0)
+                img = frame
+                break
+
+        # After the loop release the cap object
+        vid.release()
+        # Destroy all the windows
+        # cv2.destroyAllWindows()
+        # path where the image is to be saved
+        path = os.path.join('C:\\app_upload\\uploads\\tempVehicleDetails\\', '360_IMG', ip_address)
+        try:
+            os.mkdir(path)
+        except FileExistsError:
+            pass
+        img_name = side + '_' + ip_address + '.png'
+        img_path = os.path.join(path, img_name)
+        # save image
+        cv2.imwrite(img_path, img)
+
+        # create a map for each saved image and its location and send back for saving
+        img_locations.update({side: os.path.join(ip_address, img_name)})
+
+    return img_locations
+
+
+# function to run general Tesseract OCR on any detections
 def ocr(img, data):
     boxes, scores, classes, num_objects = data
     class_names = read_class_names(cfg.YOLO.LICENSE_PLATE)

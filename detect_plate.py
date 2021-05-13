@@ -42,6 +42,13 @@ flags.DEFINE_boolean('dont_show', False, 'dont show video output')
 flags.DEFINE_boolean('info', False, 'print info on detections')
 flags.DEFINE_boolean('crop', False, 'crop detections from images')
 flags.DEFINE_boolean('plate', False, 'perform license plate recognition')
+# define 360 ip addresses
+flags.DEFINE_string('back_left', '192.168.0.1', 'ip address of the device capturing back left')
+flags.DEFINE_string('back_right', '192.168.0.1', 'ip address of the device capturing back right')
+flags.DEFINE_string('front_left', '192.168.0.1', 'ip address of the device capturing front left')
+flags.DEFINE_string('front_right', '192.168.0.1', 'ip address of the device capturing front right')
+flags.DEFINE_string('username', 'admin', ' user name used to log into the 360 cameras')
+flags.DEFINE_string('password', 'Admin1234', ' password used to log into the 360 cameras')
 
 
 def main(_argv):
@@ -65,6 +72,10 @@ def main(_argv):
         saved_model_loaded = tf.saved_model.load(FLAGS.weights, tags=[tag_constants.SERVING])
         infer = saved_model_loaded.signatures['serving_default']
 
+    # create 360 dictionary
+    ip_addresses = {"BACK_LEFT": FLAGS.back_left, "BACK_RIGHT": FLAGS.back_right, "FRONT_LEFT": FLAGS.front_left,
+                    "FRONT_RIGHT": FLAGS.front_right}
+    credentials = {"username": FLAGS.username, "password": FLAGS.password}
     # begin video capture
     try:
         vid = cv2.VideoCapture(int(video_path))
@@ -177,7 +188,8 @@ def main(_argv):
                     os.mkdir(crop_path)
                 except FileExistsError:
                     pass
-                img_name = crop_objects(cv2.cvtColor(cropped_frame, cv2.COLOR_BGR2RGB), pred_bbox, crop_path, allowed_classes, ip_address)
+                img_name = crop_objects(cv2.cvtColor(cropped_frame, cv2.COLOR_BGR2RGB), pred_bbox, crop_path,
+                                        allowed_classes, ip_address)
 
             final_img_path = os.path.join(ip_address, img_name)
             image, plate_number = utils.draw_bbox(cropped_frame, pred_bbox, FLAGS.info, allowed_classes=allowed_classes,
@@ -190,8 +202,15 @@ def main(_argv):
             gate_id = FLAGS.gate_id
             # check if its not a failed recognition
             if plate_number != "":
-                ## try to capture path and plate number
-                return_detected_plate_details(final_img_path, plate_number, vehicle_side, ip_address, gate_id)
+                # capture 360 images before exiting, but only if front plate
+                if vehicle_side == 'FRONT':
+                    img_locations = write_360_img(ip_addresses, credentials)
+                # try to capture path and plate number
+                else:
+                    img_locations = write_360_img(ip_addresses, credentials)
+
+                return_detected_plate_details(final_img_path, plate_number, vehicle_side, ip_address, gate_id,
+                                              img_locations)
 
         else:
             image, plate_number = utils.draw_bbox(cropped_frame, pred_bbox, FLAGS.info, allowed_classes=allowed_classes,
@@ -203,18 +222,15 @@ def main(_argv):
 
         fps = 1.0 / (time.time() - start_time)
         print("FPS: %.2f" % fps)
-        # result = np.asarray(image)
-        # cv2.namedWindow("result", cv2.WINDOW_AUTOSIZE)
-        # result = cv2.cvtColor(image, cv2.COLOR_RGB2BGR)
+        result = np.asarray(image)
+        cv2.namedWindow("result", cv2.WINDOW_AUTOSIZE)
+        result = cv2.cvtColor(image, cv2.COLOR_RGB2BGR)
 
         if not FLAGS.dont_show:
-            # cv2.imshow("result", result)
+            cv2.imshow("result", result)
             cv2.imshow("Full Frame View", original_frame)
 
-        if FLAGS.output:
-            out.write(result)
-        if cv2.waitKey(1) & 0xFF == ord('q'): break
-    cv2.destroyAllWindows()
+        cv2.destroyAllWindows()
 
 
 if __name__ == '__main__':
