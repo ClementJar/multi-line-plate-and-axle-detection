@@ -9,7 +9,7 @@ q = queue.Queue()
 def Receive():
     print("start Reveive")
     # cap = cv2.VideoCapture("rtsp://cbuibic:admin1234@192.168.8.65:554/Streaming/Channels/101")
-    cap = cv2.VideoCapture("rtsp://admin:Admin1234@192.168.8.65:554/Streaming/Channels/1")
+    cap = cv2.VideoCapture("rtsp://admin:Admin1234@192.168.8.64:554/Streaming/Channels/1")
     # cap = cv2.VideoCapture("http://admin:Admin1234@192.168.1.65:80/Streaming/Channels/1")
     # cap = cv2.VideoCapture("http://admin:Admin1234@192.168.1.64:80/Streaming/channels/1")
     ret, frame = cap.read()

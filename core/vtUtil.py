@@ -158,81 +158,39 @@ def recognize_plate(img, coords):
     # separate coordinates from box
     xmin, ymin, xmax, ymax = coords
     # get the subimage that makes up the bounded region and take an additional 5 pixels on each side
-    box = img[int(ymin) - 5:int(ymax) + 5, int(xmin) - 5:int(xmax) + 5]
+    box = img[int(ymin)-5:int(ymax)+5, int(xmin)-5:int(xmax)+5]
     # grayscale region within bounding box
     gray = cv2.cvtColor(box, cv2.COLOR_RGB2GRAY)
     # resize image to three times as large as original for better readability
-    gray = cv2.resize(gray, None, fx=3, fy=3, interpolation=cv2.INTER_CUBIC)
+    gray = cv2.resize(gray, None, fx = 3, fy = 3, interpolation = cv2.INTER_CUBIC)
     # perform gaussian blur to smoothen image
-    blur = cv2.GaussianBlur(gray, (9, 9), 0)
-    # cv2.imshow("Gray", gray)
-    # cv2.waitKey(0)
+    blur = cv2.GaussianBlur(gray, (5,5), 0)
+    #cv2.imshow("Gray", gray)
+    #cv2.waitKey(0)
     # threshold the image using Otsus method to preprocess for tesseract
-    thresh = cv2.adaptiveThreshold(blur, 255, cv2.ADAPTIVE_THRESH_GAUSSIAN_C, cv2.THRESH_BINARY_INV, 11, 30)
-    # cv2.imshow("Otsu Threshold", thresh)
-    # cv2.waitKey(0)
+    ret, thresh = cv2.threshold(gray, 0, 255, cv2.THRESH_OTSU | cv2.THRESH_BINARY_INV)
+    #cv2.imshow("Otsu Threshold", thresh)
+    #cv2.waitKey(0)
     # create rectangular kernel for dilation
-    rect_kern = cv2.getStructuringElement(cv2.MORPH_RECT, (9, 9))
-
-    open_img = cv2.dilate(thresh, rect_kern, iterations=4)
-    # open_img = cv2.morphologyEx(thresh, cv2.MORPH_OPEN, rect_kern)
+    rect_kern = cv2.getStructuringElement(cv2.MORPH_RECT, (5,5))
     # apply dilation to make regions more clear
-    # dilation = cv2.dilate(thresh, rect_kern, iterations = 1)
-    # cv2.imshow("Dilation", dilation)
-    # im2 = cv2.dilate(open_img, rect_kern)
-    # im2 = cv2.medianBlur(im2, 5)
-    # # cv2.imshow("second", rect)
-    # # cv2.waitKey(0)
-    # im2 = cv2.medianBlur(im2, 5)
-    # # cv2.imshow("third", rect)
-    # # cv2.waitKey(0)
-    # im2 = cv2.medianBlur(im2, 5)
-    # im2 = cv2.medianBlur(im2, 5)
-    #
-    # # im2 = cv2.medianBlur(im2, 5)
-    # # im2 = cv2.medianBlur(im2, 5)
-    # # cv2.imshow("fourth", rect)
-    # # cv2.waitKey(0)
-    # # roi = cv2.bitwise_not(roi)
-    # # perform another blur on character region
-    # im2 = cv2.bitwise_not(im2)
-    # im2 = cv2.medianBlur(im2, 5)
-    # cv2.waitKey(0)
+    dilation = cv2.dilate(thresh, rect_kern, iterations = 1)
+    #cv2.imshow("Dilation", dilation)
+    #cv2.waitKey(0)
     # find contours of regions of interest within license plate
     try:
-        contours = cv2.findContours(open_img, cv2.RETR_EXTERNAL, cv2.CHAIN_APPROX_SIMPLE)
+        contours, hierarchy = cv2.findContours(dilation, cv2.RETR_TREE, cv2.CHAIN_APPROX_SIMPLE)
     except:
-        ret_img, contours, hierarchy = cv2.findContours(open_img, cv2.RETR_TREE, cv2.CHAIN_APPROX_SIMPLE)
+        ret_img, contours, hierarchy = cv2.findContours(dilation, cv2.RETR_TREE, cv2.CHAIN_APPROX_SIMPLE)
     # sort contours left-to-right
-    contours = contours[0] if len(contours) == 2 else contours[1]
-
-    im2 = open_img.copy()
-    ROI_number = 0
-    for c in contours:
-        area = cv2.contourArea(c)
-        if area > 10000:
-            x, y, w, h = cv2.boundingRect(c)
-            cv2.rectangle(open_img, (x, y), (x + w, y + h), (36, 255, 12), 1)
-    # # sort the contours according to the provided method
-    # (sorted_contours, boundingBoxes) = sort_contours(contours, method="top-to-bottom")
-    #
-    cv2.imshow('thresh', thresh)
-    cv2.imshow('dilate', open_img)
-    cv2.imshow('image', img)
-    cv2.imshow("Rected image", open_img)
-    cv2.waitKey(0)
-    # # loop over the (now sorted) contours and draw them
-    # for (i, c) in enumerate(sorted_contours):
-    #     draw_contour(im2, c, i)
-
-    # sorted_contours = sorted(contours, key=lambda ctr: cv2.boundingRect(ctr)[0])
+    sorted_contours = sorted(contours, key=lambda ctr: cv2.boundingRect(ctr)[0])
     # create copy of gray image
-
+    im2 = gray.copy()
     # create blank string to hold license plate number
     plate_num = ""
     # loop through contours and find individual letters and numbers in license plate
-    for cnt in contours:
-        x, y, w, h = cv2.boundingRect(cnt)
+    for cnt in sorted_contours:
+        x,y,w,h = cv2.boundingRect(cnt)
         height, width = im2.shape
         # if height of box is not tall enough relative to total height then skip
         if height / float(h) > 6: continue
@@ -249,18 +207,15 @@ def recognize_plate(img, coords):
         if area < 100: continue
 
         # draw the rectangle
-        rect = cv2.rectangle(im2, (x, y), (x + w, y + h), (0, 255, 0), 2)
+        rect = cv2.rectangle(im2, (x,y), (x+w, y+h), (0,255,0),2)
         # grab character region of image
-        roi = thresh[y - 5:y + h + 5, x - 5:x + w + 5]
+        roi = thresh[y-5:y+h+5, x-5:x+w+5]
         # perfrom bitwise not to flip image to black text on white background
         roi = cv2.bitwise_not(roi)
         # perform another blur on character region
         roi = cv2.medianBlur(roi, 5)
-        cv2.imshow("roi", roi)
-        cv2.waitKey(0)
         try:
-            text = pytesseract.image_to_string(roi,
-                                               config='-c tessedit_char_whitelist=0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZ --psm 8 --oem 3')
+            text = pytesseract.image_to_string(roi, config='-c tessedit_char_whitelist=0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZ --psm 8 --oem 3')
             # clean tesseract text by removing any unwanted blank spaces
             clean_text = re.sub('[\W_]+', '', text)
             plate_num += clean_text
@@ -268,8 +223,8 @@ def recognize_plate(img, coords):
             text = None
     if plate_num != None:
         print("License Plate #: ", plate_num)
-    # cv2.imshow("Character's Segmented", im2)
-    # cv2.waitKey(0)
+    #cv2.imshow("Character's Segmented", im2)
+    #cv2.waitKey(0)
     return plate_num
 
 

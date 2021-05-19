@@ -76,7 +76,8 @@ def write_360_img(ip_addresses, credentials):
         # construct url
         url = 'rtsp://' + username + ':' + password + '@' + ip_address + ':554/Streaming/Channels/1'
         # define a video capture object
-        vid = cv2.VideoCapture("./data/video/plate4.mp4")
+        # vid = cv2.VideoCapture("./data/video/plate4.mp4")
+        vid = cv2.VideoCapture(url)
 
         while True:
             # Capture the video frame

@@ -86,27 +86,30 @@ def main(_argv):
     if True:
         Fvalue, frame = vid.read()
     # set region of interest
-    # r = cv2.selectROI(frame)
+    r = cv2.selectROI(frame)
     # set region of interest
-    r = (602, 377, 538, 239)
+    # r = (602, 377, 538, 239)
     x1 = int(r[0])
     x2 = int(r[0] + r[2])
     y1 = int(r[1])
     y2 = int(r[1] + r[3])
 
-    if FLAGS.output:
-        # by default VideoCapture returns float instead of int
-        width = int(vid.get(cv2.CAP_PROP_FRAME_WIDTH))
-        height = int(vid.get(cv2.CAP_PROP_FRAME_HEIGHT))
-        fps = int(vid.get(cv2.CAP_PROP_FPS))
-        codec = cv2.VideoWriter_fourcc(*FLAGS.output_format)
-        out = cv2.VideoWriter(FLAGS.output, codec, fps, (width, height))
+    # if FLAGS.output:
+    #     # by default VideoCapture returns float instead of int
+    #     width = int(vid.get(cv2.CAP_PROP_FRAME_WIDTH))
+    #     height = int(vid.get(cv2.CAP_PROP_FRAME_HEIGHT))
+    #     fps = int(vid.get(cv2.CAP_PROP_FPS))
+    #     codec = cv2.VideoWriter_fourcc(*FLAGS.output_format)
+    #     out = cv2.VideoWriter(FLAGS.output, codec, fps, (width, height))
 
     frame_num = 0
     while True:
         return_value, original_frame = vid.read()
 
         if return_value:
+            cv2.imshow("line 108", original_frame)
+            cv2.imshow("frame 108", frame)
+
             cv2.rectangle(original_frame, (x1, y1), (x2, y2), (255, 0, 0), 2)
             # Crop image
             cropped_frame = original_frame[y1:y2, x1:x2]
@@ -222,15 +225,25 @@ def main(_argv):
 
         fps = 1.0 / (time.time() - start_time)
         print("FPS: %.2f" % fps)
-        result = np.asarray(image)
-        cv2.namedWindow("result", cv2.WINDOW_AUTOSIZE)
-        result = cv2.cvtColor(image, cv2.COLOR_RGB2BGR)
+        # result = np.asarray(image)
+        # cv2.namedWindow("result", cv2.WINDOW_AUTOSIZE)
+        # result = cv2.cvtColor(image, cv2.COLOR_RGB2BGR)
 
-        if not FLAGS.dont_show:
-            cv2.imshow("result", result)
-            cv2.imshow("Full Frame View", original_frame)
+        # if not FLAGS.dont_show:
+            # cv2.imshow("result", result)
+            # cv2.imshow("Full Frame View", original_frame)
 
-        cv2.destroyAllWindows()
+    # cv2.destroyAllWindows()
+
+
+def read_video(source):
+    return_value = False
+    original_frame = None
+    while not return_value:
+        vid = cv2.VideoCapture(source)
+        return_value, original_frame = vid.read()
+
+    return return_value, original_frame
 
 
 if __name__ == '__main__':

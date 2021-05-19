@@ -70,7 +70,7 @@ def prepare_command(data):
         file_name, file_ext = os.path.splitext(path)
         output_file = path + "-" + output_file.strftime("%H:%M:%S") + file_ext
         # camera_url = "rtsp://"+"admin"+ ":" +"Admin1234"+"@"+ ip_address + ":" +"554"+ "/Streaming/Channels/1"
-        # camera_url = "rtsp://" + user_name + ":" + password + "@" + ip_address + ":" + int_port + "/Streaming/Channels/1"
+        camera_url = "rtsp://" + user_name + ":" + password + "@" + ip_address + ":" + int_port + "/Streaming/Channels/1"
         axle_test = "./data/video/axle1.mp4"
         plate_front = "./data/video/plate4.mp4"
         plate_back = "./data/video/plate1.mp4"
@@ -78,11 +78,11 @@ def prepare_command(data):
 
         # check if a video is to be used for detection
         if vehicle_side == "FRONT":
-            command = detect_plate + plate_weight + model + video_par + plate_front
+            command = detect_plate + plate_weight + model + video_par + camera_url
         elif vehicle_side == "BACK":
-            command = detect_plate + plate_weight + model + video_par + plate_back
+            command = detect_plate + plate_weight + model + video_par + camera_url
         else:
-            command = detect_axle + axle_weight + model + video_par + axle_test
+            command = detect_axle + axle_weight + model + video_par + camera_url
         # check if the tiny weights are to be used
         if d_tiny:
             command = command + tiny_par
@@ -111,6 +111,7 @@ def prepare_command(data):
         return command, ip_address
 
     except (KeyError, TypeError, ValueError):
+        subprocess.Popen(command)
 
         return
 
