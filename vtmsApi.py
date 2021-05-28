@@ -20,7 +20,7 @@ app = Flask(__name__)
 def prepare_command(data):
     detect_plate = "python detect_plate.py "
     detect_axle = "python axle_count.py "
-    plate_weight = " --weights ./checkpoints/yolov4-License-Plate-416 --size 416 "
+    plate_weight = " --weights ./checkpoints/yolov4-tiny-license-plate-416 --size 416 "
     axle_weight = " --weights ./checkpoints/axle-yolov4-final-416 --size 416 "
     tiny_weight_and_size = " --weights ./checkpoints/yolov4-License-Plate-416 --size 416 "
     model = " --model yolov4 "
@@ -105,6 +105,10 @@ def prepare_command(data):
         # add gate parameter
         command = command + gate_id_par + gate_id
 
+        front_left = ip_address
+        front_right = ip_address
+        back_right = ip_address
+        back_left = ip_address
         # add 360 ip addresses....(i know the command is extra extra long now.. but)
         command = command + back_left_par + back_left + back_right_par + back_right + front_left_par + front_left + front_right_par + front_right
 

@@ -99,7 +99,7 @@ The following commands will allow you to run yolov4-tiny model.
 ```
 # yolov4-tiny
 python save_model.py --weights ./data/yolov4-tiny.weights --output ./checkpoints/yolov4-tiny-416 --input_size 416 --model yolov4 --tiny
-python save_model.py --weights ./data/yolov4-tiny.weights --output ./checkpoints/yolov4-tiny-416 --input_size 416 --model yolov4 --tiny
+python save_model.py --weights ./data/yolov4-tiny-license-plate.weights --output ./checkpoints/yolov4-tiny-license-plate-416 --input_size 416 --model yolov4 --tiny
 
 # Run yolov4-tiny tensorflow model
 python detect.py --weights ./checkpoints/yolov4-tiny-416 --size 416 --model yolov4 --images ./data/images/kite.jpg --tiny
