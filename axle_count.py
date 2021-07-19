@@ -1,6 +1,7 @@
 import os
 # comment out below line to enable tensorflow logging outputs
 from detection_response import return_detected_plate_details, return_detected_axle_details
+from detect import detect_plate
 
 os.environ['TF_CPP_MIN_LOG_LEVEL'] = '3'
 import time
@@ -257,6 +258,9 @@ def main(_argv):
         current_time = time.time() - initial_time
 
         if current_time >= 150:
+            # run plate detection once vehicle in desired zone
+            detect_plate(FLAGS)
+
             print("Total count =" + str(total_count))
             return_detected_axle_details(total_count, FLAGS.ip_address, FLAGS.gate_id)
             total_count = 0

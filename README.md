@@ -100,6 +100,7 @@ The following commands will allow you to run yolov4-tiny model.
 # yolov4-tiny
 python save_model.py --weights ./data/yolov4-tiny.weights --output ./checkpoints/yolov4-tiny-416 --input_size 416 --model yolov4 --tiny
 python save_model.py --weights ./data/yolov4-tiny-license-plate.weights --output ./checkpoints/yolov4-tiny-license-plate-416 --input_size 416 --model yolov4 --tiny
+python save_model.py --weights ./data/yolov4-tiny-axle.weights --output ./checkpoints/yolov4-tiny-axle-416 --input_size 416 --model yolov4 --tiny
 
 # Run yolov4-tiny tensorflow model
 python detect.py --weights ./checkpoints/yolov4-tiny-416 --size 416 --model yolov4 --images ./data/images/kite.jpg --tiny
@@ -211,12 +212,14 @@ python detect_video.py --weights ./checkpoints/yolov4-license-plate-416 --size 4
 python detect_video.py --weights ./checkpoints/yolov4-License-Plate-416 --size 416 --model yolov4 --video ./data/video/car3.mp4  --plate --crop
 python detect_plate.py --weights ./checkpoints/yolov4-license-plate-416 --size 416 --model yolov4 --video ./data/video/license_plate.mp4  --plate --crop
 python detect_plate.py --weights ./checkpoints/yolov4-license-plate-416 --size 416 --model yolov4 --video ./data/video/plate4.mp4  --plate --crop
-python axle_count.py --weights ./checkpoints/axle_yolov4-tiny-416 --size 416 --model yolov4 --video ./data/video/axle1.mp4 --tiny
+python detect_plate.py --weights ./checkpoints/yolov4-tiny-license-plate-416 --size 416 --model yolov4 --video ./data/video/plate2.mp4  --plate --crop
+python axle_count.py --weights ./checkpoints/yolov4-tiny-axle-416 --size 416 --model yolov4 --video ./data/video/axle1.mp4 --tiny
 python axle_count.py --weights ./checkpoints/axle-yolov4-final-416 --size 416 --model yolov4 --video ./data/video/axle1.mp4
 python detect_video.py --weights ./checkpoints/yolov4-tiny-license-plate-416 --size 416 --model yolov4 --video ./data/video/license_plate.mp4  --plate --crop --tiny
 python detect_video.py --weights ./checkpoints/yolov4-tiny-license-plate-416 --size 416 --model yolov4 --video ./data/video/car2.mp4  --plate --crop --tiny
 python detect_video.py --weights ./checkpoints/yolov4-tiny-license-plate-416 --size 416 --model yolov4 --video rtsp://admin:Admin1234@192.168.1.64:554/Streaming/Channels/2  --plate --crop --tiny
-python detect.py --weights ./checkpoints/yolov4-License-Plate-416 --size 416 --model yolov4 --images ./data/images/borderTests/license1.jpg --plate
+python detect.py --weights ./checkpoints/yolov4-license-plate-416 --size 416 --model yolov4 --video ./data/images/car8.jpg --plate
+python detect.py --weights ./checkpoints/yolov4-license-plate-416 --size 416 --model yolov4 --images ./data/images/car12.jpg,./data/images/car13.jpg,./data/images/car14.jpg,./data/images/car15.jpg,./data/images/car16.jpg,./data/images/car6.jpg,./data/images/car7.jpg,./data/images/car8.jpg,./data/images/car9.jpg,./data/images/car10.jpg --plate 
 ```
 
 ### Resulting Image Example

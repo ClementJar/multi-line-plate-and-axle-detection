@@ -60,6 +60,7 @@ def prepare_command(data):
         d_crop = bool(data['crop'])  # whether to crop media or not
         d_plate = bool(data['plate'])  # plate recognition or not
         d_tiny = bool(data['tiny'])  # use tiny weights or not
+        d_type = bool(data['detectionType'])  # is auto detection or manual
 
         # 360 image ip adresses
         front_right = data['frontRightIp']  # ip address of device capturing front right o vehicle
@@ -74,27 +75,33 @@ def prepare_command(data):
         axle_test = "./data/video/axle1.mp4"
         plate_front = "./data/video/plate4.mp4"
         plate_back = "./data/video/plate1.mp4"
-        # check if the tiny weights are to be used
 
-        # check if a video is to be used for detection
-        if vehicle_side == "FRONT":
-            command = detect_plate + plate_weight + model + video_par + camera_url
-        elif vehicle_side == "BACK":
-            command = detect_plate + plate_weight + model + video_par + camera_url
+        # check if auto
+        if d_type:
+            command = detect_axle + axle_weight + plate_weight + model + video_par + camera_url
         else:
-            command = detect_axle + axle_weight + model + video_par + camera_url
+            command = detect_plate + plate_weight + model + video_par + camera_url
+            # check if a video is to be used for detection
+        if vehicle_side == "FRONT":
+            front_left = ip_address
+            front_right = ip_address
+            back_right = ip_address
+            back_left = ip_address
+            # add 360 ip addresses....(i know the command is extra extra long now.. but)
+            command = command + back_left_par + back_left + back_right_par + back_right + front_left_par + front_left + front_right_par + front_right
+
         # check if the tiny weights are to be used
         if d_tiny:
             command = command + tiny_par
         # check if the count method is to be used
         if d_count:
             command = command + count_par
-        # check if the crop method is to be used
-        if d_crop and vehicle_side != "SIDE":
-            command = command + crop_par
-        # check if the license plate method is to be used
-        if d_plate and vehicle_side != "SIDE":
-            command = command + plate_par
+        # # check if the crop method is to be used
+        # if d_crop and vehicle_side != "SIDE":
+        #     command = command + crop_par
+        # # check if the license plate method is to be used
+        # if d_plate and vehicle_side != "SIDE":
+        #     command = command + plate_par
 
         # add ip adress to command
         command = command + ip_address_par + ip_address
@@ -104,13 +111,6 @@ def prepare_command(data):
 
         # add gate parameter
         command = command + gate_id_par + gate_id
-
-        front_left = ip_address
-        front_right = ip_address
-        back_right = ip_address
-        back_left = ip_address
-        # add 360 ip addresses....(i know the command is extra extra long now.. but)
-        command = command + back_left_par + back_left + back_right_par + back_right + front_left_par + front_left + front_right_par + front_right
 
         return command, ip_address
 
