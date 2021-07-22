@@ -27,12 +27,12 @@ from deep_sort.detection import Detection
 from deep_sort.tracker import Tracker
 from tools import generate_detections as gdet
 flags.DEFINE_string('framework', 'tf', '(tf, tflite, trt')
-flags.DEFINE_string('weights', './checkpoints/yolov4-416',
+flags.DEFINE_string('axle_weights', './checkpoints/yolov4-416',
                     'path to weights file')
 flags.DEFINE_integer('size', 416, 'resize images to')
 flags.DEFINE_boolean('tiny', False, 'yolo or yolo-tiny')
 flags.DEFINE_string('model', 'yolov4', 'yolov3 or yolov4')
-flags.DEFINE_string('ip_address', '192.168.0.1', 'ip address of the device capturing')
+flags.DEFINE_string('axle_ip_address', '192.168.0.1', 'ip address of the device capturing')
 flags.DEFINE_string('vehicle_side', 'front', 'back or front of vehicle ?')
 flags.DEFINE_string('gate_id', '0', 'id of gate detection is being run on ?')
 flags.DEFINE_string('video', './data/video/video.mp4', 'path to input video or set to 0 for webcam')
@@ -68,7 +68,7 @@ def main(_argv):
 
     # load tflite model if flag is set
     if FLAGS.framework == 'tflite':
-        interpreter = tf.lite.Interpreter(model_path=FLAGS.weights)
+        interpreter = tf.lite.Interpreter(model_path=FLAGS.axle_weights)
         interpreter.allocate_tensors()
         input_details = interpreter.get_input_details()
         output_details = interpreter.get_output_details()
@@ -76,7 +76,7 @@ def main(_argv):
         print(output_details)
     # otherwise load standard tensorflow saved model
     else:
-        saved_model_loaded = tf.saved_model.load(FLAGS.weights, tags=[tag_constants.SERVING])
+        saved_model_loaded = tf.saved_model.load(FLAGS.axle_weights, tags=[tag_constants.SERVING])
         infer = saved_model_loaded.signatures['serving_default']
 
     # begin video capture
@@ -257,12 +257,12 @@ def main(_argv):
         print("frame count =" + str(frame_counter))
         current_time = time.time() - initial_time
 
-        if current_time >= 150:
+        if current_time >= 40:
             # run plate detection once vehicle in desired zone
             detect_plate(FLAGS)
 
             print("Total count =" + str(total_count))
-            return_detected_axle_details(total_count, FLAGS.ip_address, FLAGS.gate_id)
+            return_detected_axle_details(total_count, FLAGS.axle_ip_address, FLAGS.gate_id)
             total_count = 0
             # initialize the timer
             initial_time = time.time()

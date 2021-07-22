@@ -101,6 +101,7 @@ The following commands will allow you to run yolov4-tiny model.
 python save_model.py --weights ./data/yolov4-tiny.weights --output ./checkpoints/yolov4-tiny-416 --input_size 416 --model yolov4 --tiny
 python save_model.py --weights ./data/yolov4-tiny-license-plate.weights --output ./checkpoints/yolov4-tiny-license-plate-416 --input_size 416 --model yolov4 --tiny
 python save_model.py --weights ./data/yolov4-tiny-axle.weights --output ./checkpoints/yolov4-tiny-axle-416 --input_size 416 --model yolov4 --tiny
+python save_model.py --weights ./data/axle-yolov4-final.weights --output ./checkpoints/axle-yolov4-final-416 --input_size 416 --model yolov4
 
 # Run yolov4-tiny tensorflow model
 python detect.py --weights ./checkpoints/yolov4-tiny-416 --size 416 --model yolov4 --images ./data/images/kite.jpg --tiny
@@ -112,7 +113,7 @@ The following commands will allow you to run your custom yolov4 model. (video an
 ```
 # custom yolov4
 python save_model.py --weights ./data/custom.weights --output ./checkpoints/custom-416 --input_size 416 --model yolov4 
-python save_model.py --weights ./data/axle-yolov4-final.weights --output ./checkpoints/axle-yolov4-final-416 --input_size 416 --model yolov4 
+python save_model.py --weights ./data/yolov4-tiny-axle.weights --output ./checkpoints/yolov4-tiny-axle-416 --input_size 416 --model yolov4 
 python save_model.py --weights ./data/yolov4-License-Plate.weights --output ./checkpoints/yolo4-license-plate-416 --input_size 416 --model yolov4 
 
 # Run custom yolov4 tensorflow model
